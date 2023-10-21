@@ -16,7 +16,6 @@ class Main {
         this.container.setAttribute("viewBox", "0 0 1000 1000");
         document.body.appendChild(this.container);
 
-        this._onResize();
 
         for (let i = 0; i < 4; i++) {
             let layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -27,6 +26,8 @@ class Main {
         window.addEventListener("resize", this._onResize);
         window.addEventListener("pointerenter", this._onPointerMove);
         window.addEventListener("pointermove", this._onPointerMove);
+        
+        this._onResize();
         this._mainLoop();
     }
 
@@ -109,7 +110,33 @@ class Main {
     }
 
     private _onResize = () => {
-        this.containerRect = this.container.getBoundingClientRect()
+        let screenWidth = document.body.clientWidth;
+        let screenHeight = document.body.clientHeight;
+        let screenRatio = screenWidth / screenHeight;
+
+        let w: number;
+        let marginLeft: number;
+        let h: number;
+        let marginTop: number;
+        let r = 16/9;
+        
+        if (screenRatio >= r) {
+            h = screenHeight * 0.9;
+            w = h * r;
+        }
+        else {
+            w = screenWidth * 0.9;
+            h = w / r;
+        }
+
+        marginLeft = (screenWidth - w) / 2;
+        marginTop = (screenHeight - h) / 2;
+        this.container.style.width = w + "px";
+        this.container.style.height = h + "px";
+        this.container.style.marginLeft = marginLeft + "px";
+        this.container.style.marginTop = marginTop + "px";
+
+        this.containerRect = this.container.getBoundingClientRect();
     }
 
     private _update: (dt: number) => void;
