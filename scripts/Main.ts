@@ -13,7 +13,7 @@ class Main {
     public instantiate(): void {
         this.container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.container.id = "main-container";
-        this.container.setAttribute("viewBox", "0 0 1000 1000");
+        this.container.setAttribute("viewBox", "0 0 1600 1000");
         document.body.appendChild(this.container);
 
 
@@ -27,8 +27,30 @@ class Main {
         window.addEventListener("pointerenter", this._onPointerMove);
         window.addEventListener("pointermove", this._onPointerMove);
         
+        this.makeLevel1();
+
         this._onResize();
         this._mainLoop();
+    }
+
+    public makeLevel1(): void {
+        for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < 10; i++) {
+                let block = new Block(this, BlockColor.Green);
+                block.pos.x = 25 + j * 50;
+                block.pos.y = 50 + i * 100;
+                block.instantiate();
+            }
+        }
+
+        for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < 10; i++) {
+                let block = new Block(this, BlockColor.Red);
+                block.pos.x = 1600 - 25 - j * 50;
+                block.pos.y = 50 + i * 100;
+                block.instantiate();
+            }
+        }
     }
 
     public start(): void {
@@ -118,7 +140,7 @@ class Main {
         let marginLeft: number;
         let h: number;
         let marginTop: number;
-        let r = 16/9;
+        let r = 1.6;
         
         if (screenRatio >= r) {
             h = screenHeight * 0.9;

@@ -59,6 +59,51 @@ class Gameobject {
     }
 }
 /// <reference path="./engine/Gameobject.ts" />
+var BlockColor;
+(function (BlockColor) {
+    BlockColor[BlockColor["Red"] = 0] = "Red";
+    BlockColor[BlockColor["Green"] = 1] = "Green";
+})(BlockColor || (BlockColor = {}));
+class Block extends Gameobject {
+    constructor(main, color = BlockColor.Red) {
+        super({}, main);
+        this.color = color;
+    }
+    instantiate() {
+        super.instantiate();
+        this._renderer = this.addComponent(new PathRenderer(this, {
+            points: [
+                new Vec2(-20, -45),
+                new Vec2(20, -45),
+                new Vec2(20, 45),
+                new Vec2(-20, 45)
+            ],
+            close: true,
+            layer: 2
+        }));
+        this._renderer.addClass("block");
+        this.setColor(this.color);
+    }
+    start() {
+        super.start();
+    }
+    update(dt) {
+        super.update(dt);
+    }
+    stop() {
+        super.stop();
+    }
+    setColor(color) {
+        this.color = color;
+        if (this.color === BlockColor.Red) {
+            this._renderer.addClass("red");
+        }
+        else if (this.color === BlockColor.Green) {
+            this._renderer.addClass("green");
+        }
+    }
+}
+/// <reference path="./engine/Gameobject.ts" />
 class Main {
     constructor() {
         this.layers = [];
@@ -89,7 +134,7 @@ class Main {
             let marginLeft;
             let h;
             let marginTop;
-            let r = 16 / 9;
+            let r = 1.6;
             if (screenRatio >= r) {
                 h = screenHeight * 0.9;
                 w = h * r;
@@ -110,7 +155,7 @@ class Main {
     instantiate() {
         this.container = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.container.id = "main-container";
-        this.container.setAttribute("viewBox", "0 0 1000 1000");
+        this.container.setAttribute("viewBox", "0 0 1600 1000");
         document.body.appendChild(this.container);
         for (let i = 0; i < 4; i++) {
             let layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -120,8 +165,27 @@ class Main {
         window.addEventListener("resize", this._onResize);
         window.addEventListener("pointerenter", this._onPointerMove);
         window.addEventListener("pointermove", this._onPointerMove);
+        this.makeLevel1();
         this._onResize();
         this._mainLoop();
+    }
+    makeLevel1() {
+        for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < 10; i++) {
+                let block = new Block(this, BlockColor.Green);
+                block.pos.x = 25 + j * 50;
+                block.pos.y = 50 + i * 100;
+                block.instantiate();
+            }
+        }
+        for (let j = 0; j < 5; j++) {
+            for (let i = 0; i < 10; i++) {
+                let block = new Block(this, BlockColor.Red);
+                block.pos.x = 1600 - 25 - j * 50;
+                block.pos.y = 50 + i * 100;
+                block.instantiate();
+            }
+        }
     }
     start() {
         document.getElementById("credit").style.display = "none";

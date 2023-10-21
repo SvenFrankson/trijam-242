@@ -16,6 +16,7 @@ body {
 #main-container {
     position: fixed;
     background-color: darkcyan;
+    outline: 2px solid darkcyan;
 }
 
 #credit {
@@ -35,4 +36,18 @@ body {
     right: 15px;
     bottom: 15px;
     z-index: 10;
+}
+
+.block {
+    fill: none;
+    stroke: white;
+    stroke-width: 4;
+}
+
+.block.green {
+    fill: green;
+}
+
+.block.red {
+    fill: red;
 }
