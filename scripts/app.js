@@ -59,15 +59,61 @@ class Gameobject {
     }
 }
 /// <reference path="./engine/Gameobject.ts" />
+class Ball extends Gameobject {
+    constructor(main) {
+        super({}, main);
+        this.speed = new Vec2(0, 0);
+        this.radius = 20;
+    }
+    instantiate() {
+        super.instantiate();
+        this._circleRenderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 2 }));
+        this._circleRenderer.addClass("ball");
+    }
+    start() {
+        super.start();
+    }
+    update(dt) {
+        super.update(dt);
+        this.pos.x += this.speed.x * dt;
+        this.pos.y += this.speed.y * dt;
+        if (this.pos.x < this.radius) {
+            this.pos.x = this.radius;
+            this.speed.x *= -1;
+        }
+        if (this.pos.y < this.radius) {
+            this.pos.y = this.radius;
+            this.speed.y *= -1;
+        }
+        if (this.pos.x > 1600 - this.radius) {
+            this.pos.x = 1600 - this.radius;
+            this.speed.x *= -1;
+        }
+        if (this.pos.y > 1000 - this.radius) {
+            this.pos.y = 1000 - this.radius;
+            this.speed.y *= -1;
+        }
+        this.main.gameobjects.forEach(other => {
+        });
+    }
+    stop() {
+        super.stop();
+    }
+}
+/// <reference path="./engine/Gameobject.ts" />
 var BlockColor;
 (function (BlockColor) {
     BlockColor[BlockColor["Red"] = 0] = "Red";
     BlockColor[BlockColor["Green"] = 1] = "Green";
 })(BlockColor || (BlockColor = {}));
 class Block extends Gameobject {
-    constructor(main, color = BlockColor.Red) {
+    constructor(i, j, main, color = BlockColor.Red) {
         super({}, main);
+        this.i = i;
+        this.j = j;
         this.color = color;
+        this.pos.x = 25 + i * 50;
+        this.pos.y = 50 + j * 100;
     }
     instantiate() {
         super.instantiate();
@@ -170,22 +216,29 @@ class Main {
         this._mainLoop();
     }
     makeLevel1() {
-        for (let j = 0; j < 5; j++) {
-            for (let i = 0; i < 10; i++) {
-                let block = new Block(this, BlockColor.Green);
-                block.pos.x = 25 + j * 50;
-                block.pos.y = 50 + i * 100;
+        this.blocks = [];
+        for (let i = 0; i < 32; i++) {
+            this.blocks[i] = [];
+        }
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 10; j++) {
+                let block = new Block(i, j, this, BlockColor.Green);
                 block.instantiate();
             }
         }
-        for (let j = 0; j < 5; j++) {
-            for (let i = 0; i < 10; i++) {
-                let block = new Block(this, BlockColor.Red);
-                block.pos.x = 1600 - 25 - j * 50;
-                block.pos.y = 50 + i * 100;
+        for (let i = 32 - 5; i < 32; i++) {
+            for (let j = 0; j < 10; j++) {
+                let block = new Block(i, j, this, BlockColor.Red);
                 block.instantiate();
             }
         }
+        let ball = new Ball(this);
+        ball.pos.x = 800;
+        ball.pos.y = 400;
+        ball.instantiate();
+        let a = Math.random() * 2 * Math.PI;
+        ball.speed.x = Math.cos(a) * 200;
+        ball.speed.y = Math.sin(a) * 200;
     }
     start() {
         document.getElementById("credit").style.display = "none";

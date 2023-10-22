@@ -41,7 +41,13 @@ body {
 .block {
     fill: none;
     stroke: white;
-    stroke-width: 4;
+    stroke-width: 2;
+}
+
+.ball {
+    fill: blue;
+    stroke: white;
+    stroke-width: 2;
 }
 
 .block.green {

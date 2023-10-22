@@ -9,8 +9,10 @@ class Block extends Gameobject {
 
     protected _renderer: PathRenderer;
     
-    constructor(main: Main, public color: BlockColor = BlockColor.Red) {
+    constructor(public i: number, public j: number, main: Main, public color: BlockColor = BlockColor.Red) {
         super({ }, main);
+        this.pos.x = 25 + i * 50;
+        this.pos.y = 50 + j * 100;
     }
 
     public instantiate(): void {

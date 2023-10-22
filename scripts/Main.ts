@@ -6,6 +6,7 @@ class Main {
     public container: SVGElement;
     public layers: SVGGElement[] = [];
     public gameobjects: UniqueList<Gameobject> = new UniqueList<Gameobject>();
+    public blocks: Block[][];
 
     constructor() {
     }
@@ -34,23 +35,34 @@ class Main {
     }
 
     public makeLevel1(): void {
-        for (let j = 0; j < 5; j++) {
-            for (let i = 0; i < 10; i++) {
-                let block = new Block(this, BlockColor.Green);
-                block.pos.x = 25 + j * 50;
-                block.pos.y = 50 + i * 100;
+        this.blocks = [];
+        for (let i = 0; i < 32; i++) {
+            this.blocks[i] = [];
+        }
+
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 10; j++) {
+                let block = new Block(i, j, this, BlockColor.Green);
                 block.instantiate();
             }
         }
 
-        for (let j = 0; j < 5; j++) {
-            for (let i = 0; i < 10; i++) {
-                let block = new Block(this, BlockColor.Red);
-                block.pos.x = 1600 - 25 - j * 50;
-                block.pos.y = 50 + i * 100;
+        for (let i = 32 - 5; i < 32; i++) {
+            for (let j = 0; j < 10; j++) {
+                let block = new Block(i, j, this, BlockColor.Red);
                 block.instantiate();
             }
         }
+
+        let ball = new Ball(this);
+        ball.pos.x = 800;
+        ball.pos.y = 400;
+        ball.instantiate();
+        
+        let a = Math.random() * 2 * Math.PI;
+        ball.speed.x = Math.cos(a) * 200;
+        ball.speed.y = Math.sin(a) * 200;
+
     }
 
     public start(): void {
