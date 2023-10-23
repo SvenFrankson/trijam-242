@@ -8,12 +8,14 @@ enum BlockColor {
 class Block extends Gameobject {
 
     protected _renderer: PathRenderer;
+    public animateSize = AnimationFactory.EmptyVec2Callback;
     
     constructor(public i: number, public j: number, main: Main, public color: BlockColor = BlockColor.Red) {
         super({ }, main);
         this.pos.x = 25 + i * 50;
         this.pos.y = 50 + j * 100;
         this.main.blocks[i][j] = this;
+        this.animateSize = AnimationFactory.CreateVec2(this, this, "scale");
     }
 
     public instantiate(): void {
@@ -103,6 +105,9 @@ class Block extends Gameobject {
             if (!this.main.blocks[this.i + 1][this.j]) {
                 let iNext = new Block(this.i + 1, this.j, this.main, this.color);
                 iNext.instantiate();
+                iNext.scale.x = 0.01;
+                iNext.scale.y = 0.01;
+                iNext.animateSize(new Vec2(1, 1), 3);
                 newBlocks.push(iNext);
             }
         }
@@ -110,17 +115,26 @@ class Block extends Gameobject {
             if (!this.main.blocks[this.i - 1][this.j]) {
                 let iPrev = new Block(this.i - 1, this.j, this.main, this.color);
                 iPrev.instantiate();
+                iPrev.scale.x = 0.01;
+                iPrev.scale.y = 0.01;
+                iPrev.animateSize(new Vec2(1, 1), 3);
                 newBlocks.push(iPrev);
             }
         }
         if (!this.main.blocks[this.i][this.j + 1]) {
             let jNext = new Block(this.i, this.j + 1, this.main, this.color);
             jNext.instantiate();
+            jNext.scale.x = 0.01;
+            jNext.scale.y = 0.01;
+            jNext.animateSize(new Vec2(1, 1), 3);
             newBlocks.push(jNext);
         }
         if (!this.main.blocks[this.i][this.j - 1]) {
             let jPrev = new Block(this.i, this.j - 1, this.main, this.color);
             jPrev.instantiate();
+            jPrev.scale.x = 0.01;
+            jPrev.scale.y = 0.01;
+            jPrev.animateSize(new Vec2(1, 1), 3);
             newBlocks.push(jPrev);
         }
         return newBlocks;

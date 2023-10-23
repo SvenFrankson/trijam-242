@@ -2,6 +2,7 @@ interface IGameobjectProp {
     name?: string;
     pos?: IVec2;
     rot?: number;
+    scale?: IVec2;
 }
 
 class Gameobject {
@@ -9,6 +10,7 @@ class Gameobject {
     public name: string = "";
     public pos: Vec2 = new Vec2();
     public rot: number = 0;
+    public scale: Vec2 = new Vec2(1, 1);
     protected renderers: UniqueList<Renderer> = new UniqueList<Renderer>();
     public components: UniqueList<Component> = new UniqueList<Component>();
 
@@ -22,6 +24,9 @@ class Gameobject {
             }
             if (isFinite(prop.rot)) {
                 this.rot = prop.rot;
+            }
+            if (prop.scale) {
+                this.scale.copyFrom(prop.scale);
             }
         }
     }
@@ -67,10 +72,10 @@ class Gameobject {
         }
     }
 
-    public updatePosRot(): void {
+    public updatePosRotScale(): void {
         if (this.renderers) {
             this.renderers.forEach(renderer => {
-                renderer.updatePosRot();
+                renderer.updatePosRotScale();
             });
         }
     }

@@ -38,7 +38,7 @@ abstract class Renderer extends Component {
 
     }
 
-    public updatePosRot(): void {
+    public updatePosRotScale(): void {
 
     }
 }
@@ -92,7 +92,7 @@ class CircleRenderer extends Renderer {
         }
     }
 
-    public updatePosRot(): void {
+    public updatePosRotScale(): void {
         if (this.svgElement) {
             this.svgElement.setAttribute("cx", this.gameobject.pos.x.toFixed(1));
             this.svgElement.setAttribute("cy", this.gameobject.pos.y.toFixed(1));
@@ -194,8 +194,8 @@ class PathRenderer extends Renderer {
         this.svgElement.setAttribute("d", d);
     }
 
-    public updatePosRot(): void {
-        this.svgElement.setAttribute("transform", "translate(" + this.gameobject.pos.x.toFixed(1) + " " + this.gameobject.pos.y.toFixed(1) + "), rotate(" + (this.gameobject.rot / Math.PI * 180).toFixed(0) + ")");
+    public updatePosRotScale(): void {
+        this.svgElement.setAttribute("transform", "translate(" + this.gameobject.pos.x.toFixed(1) + " " + this.gameobject.pos.y.toFixed(1) + "), rotate(" + (this.gameobject.rot / Math.PI * 180).toFixed(0) + "), scale(" + this.gameobject.scale.x.toFixed(2) + " " + this.gameobject.scale.y.toFixed(2) + ")");
     }
 
     public dispose(): void {

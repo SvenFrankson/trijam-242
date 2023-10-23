@@ -4,6 +4,7 @@ class Gameobject {
         this.name = "";
         this.pos = new Vec2();
         this.rot = 0;
+        this.scale = new Vec2(1, 1);
         this.renderers = new UniqueList();
         this.components = new UniqueList();
         if (prop) {
@@ -15,6 +16,9 @@ class Gameobject {
             }
             if (isFinite(prop.rot)) {
                 this.rot = prop.rot;
+            }
+            if (prop.scale) {
+                this.scale.copyFrom(prop.scale);
             }
         }
     }
@@ -50,10 +54,10 @@ class Gameobject {
             });
         }
     }
-    updatePosRot() {
+    updatePosRotScale() {
         if (this.renderers) {
             this.renderers.forEach(renderer => {
-                renderer.updatePosRot();
+                renderer.updatePosRotScale();
             });
         }
     }
@@ -163,9 +167,11 @@ class Block extends Gameobject {
         this.i = i;
         this.j = j;
         this.color = color;
+        this.animateSize = AnimationFactory.EmptyVec2Callback;
         this.pos.x = 25 + i * 50;
         this.pos.y = 50 + j * 100;
         this.main.blocks[i][j] = this;
+        this.animateSize = AnimationFactory.CreateVec2(this, this, "scale");
     }
     instantiate() {
         super.instantiate();
@@ -241,6 +247,9 @@ class Block extends Gameobject {
             if (!this.main.blocks[this.i + 1][this.j]) {
                 let iNext = new Block(this.i + 1, this.j, this.main, this.color);
                 iNext.instantiate();
+                iNext.scale.x = 0.01;
+                iNext.scale.y = 0.01;
+                iNext.animateSize(new Vec2(1, 1), 3);
                 newBlocks.push(iNext);
             }
         }
@@ -248,17 +257,26 @@ class Block extends Gameobject {
             if (!this.main.blocks[this.i - 1][this.j]) {
                 let iPrev = new Block(this.i - 1, this.j, this.main, this.color);
                 iPrev.instantiate();
+                iPrev.scale.x = 0.01;
+                iPrev.scale.y = 0.01;
+                iPrev.animateSize(new Vec2(1, 1), 3);
                 newBlocks.push(iPrev);
             }
         }
         if (!this.main.blocks[this.i][this.j + 1]) {
             let jNext = new Block(this.i, this.j + 1, this.main, this.color);
             jNext.instantiate();
+            jNext.scale.x = 0.01;
+            jNext.scale.y = 0.01;
+            jNext.animateSize(new Vec2(1, 1), 3);
             newBlocks.push(jNext);
         }
         if (!this.main.blocks[this.i][this.j - 1]) {
             let jPrev = new Block(this.i, this.j - 1, this.main, this.color);
             jPrev.instantiate();
+            jPrev.scale.x = 0.01;
+            jPrev.scale.y = 0.01;
+            jPrev.animateSize(new Vec2(1, 1), 3);
             newBlocks.push(jPrev);
         }
         return newBlocks;
@@ -269,6 +287,7 @@ class Main {
     constructor() {
         this.layers = [];
         this.gameobjects = new UniqueList();
+        this.updates = new UniqueList();
         this._lastT = 0;
         this._mainLoop = () => {
             let dt = 0;
@@ -371,11 +390,14 @@ class Main {
             gameobject.draw();
         });
         this._update = (dt) => {
+            this.updates.forEach(up => {
+                up();
+            });
             this.gameobjects.forEach(gameobject => {
                 gameobject.update(dt);
             });
             this.gameobjects.forEach(gameobject => {
-                gameobject.updatePosRot();
+                gameobject.updatePosRotScale();
             });
         };
     }
@@ -408,6 +430,12 @@ class Main {
         ref.y = py;
         return ref;
     }
+    addUpdate(callback) {
+        this.updates.push(callback);
+    }
+    removeUpdate(callback) {
+        this.updates.remove(callback);
+    }
 }
 window.addEventListener("load", () => {
     let main = new Main();
@@ -416,6 +444,101 @@ window.addEventListener("load", () => {
         main.start();
     });
 });
+class AnimationFactory {
+    static CreateWait(owner, onUpdateCallback) {
+        return (duration) => {
+            return new Promise(resolve => {
+                let t = 0;
+                let animationCB = () => {
+                    t += 1 / 60;
+                    let f = t / duration;
+                    if (f < 1) {
+                        if (onUpdateCallback) {
+                            onUpdateCallback();
+                        }
+                    }
+                    else {
+                        if (onUpdateCallback) {
+                            onUpdateCallback();
+                        }
+                        owner.main.removeUpdate(animationCB);
+                        resolve();
+                    }
+                };
+                owner.main.addUpdate(animationCB);
+            });
+        };
+    }
+    static CreateNumber(owner, obj, property, onUpdateCallback) {
+        return (target, duration) => {
+            return new Promise(resolve => {
+                let origin = obj[property];
+                let t = 0;
+                if (owner[property + "_animation"]) {
+                    owner.main.removeUpdate(owner[property + "_animation"]);
+                }
+                let animationCB = () => {
+                    t += 1 / 60;
+                    let f = t / duration;
+                    if (f < 1) {
+                        obj[property] = origin * (1 - f) + target * f;
+                        if (onUpdateCallback) {
+                            onUpdateCallback();
+                        }
+                    }
+                    else {
+                        obj[property] = target;
+                        if (onUpdateCallback) {
+                            onUpdateCallback();
+                        }
+                        owner.main.removeUpdate(animationCB);
+                        owner[property + "_animation"] = undefined;
+                        resolve();
+                    }
+                };
+                owner.main.addUpdate(animationCB);
+                owner[property + "_animation"] = animationCB;
+            });
+        };
+    }
+    static CreateVec2(owner, obj, property, onUpdateCallback) {
+        return (target, duration) => {
+            return new Promise(resolve => {
+                let origin = obj[property];
+                let t = 0;
+                if (owner[property + "_animation"]) {
+                    owner.main.removeUpdate(owner[property + "_animation"]);
+                }
+                let tmp = new Vec2();
+                let animationCB = () => {
+                    t += 1 / 60;
+                    let f = t / duration;
+                    if (f < 1) {
+                        tmp.copyFrom(target).scaleInPlace(f);
+                        obj[property].copyFrom(origin).scaleInPlace(1 - f).addInPlace(tmp);
+                        if (onUpdateCallback) {
+                            onUpdateCallback();
+                        }
+                    }
+                    else {
+                        obj[property].copyFrom(target);
+                        if (onUpdateCallback) {
+                            onUpdateCallback();
+                        }
+                        owner.main.removeUpdate(animationCB);
+                        owner[property + "_animation"] = undefined;
+                        resolve();
+                    }
+                };
+                owner.main.addUpdate(animationCB);
+                owner[property + "_animation"] = animationCB;
+            });
+        };
+    }
+}
+AnimationFactory.EmptyVoidCallback = async (duration) => { };
+AnimationFactory.EmptyNumberCallback = async (target, duration) => { };
+AnimationFactory.EmptyVec2Callback = async (target, duration) => { };
 class Component {
     constructor(gameobject) {
         this.gameobject = gameobject;
@@ -453,7 +576,7 @@ class Renderer extends Component {
     }
     draw() {
     }
-    updatePosRot() {
+    updatePosRotScale() {
     }
 }
 class CircleRenderer extends Renderer {
@@ -495,7 +618,7 @@ class CircleRenderer extends Renderer {
             this.gameobject.main.layers[this.layer].appendChild(this.svgElement);
         }
     }
-    updatePosRot() {
+    updatePosRotScale() {
         if (this.svgElement) {
             this.svgElement.setAttribute("cx", this.gameobject.pos.x.toFixed(1));
             this.svgElement.setAttribute("cy", this.gameobject.pos.y.toFixed(1));
@@ -580,8 +703,8 @@ class PathRenderer extends Renderer {
         }
         this.svgElement.setAttribute("d", d);
     }
-    updatePosRot() {
-        this.svgElement.setAttribute("transform", "translate(" + this.gameobject.pos.x.toFixed(1) + " " + this.gameobject.pos.y.toFixed(1) + "), rotate(" + (this.gameobject.rot / Math.PI * 180).toFixed(0) + ")");
+    updatePosRotScale() {
+        this.svgElement.setAttribute("transform", "translate(" + this.gameobject.pos.x.toFixed(1) + " " + this.gameobject.pos.y.toFixed(1) + "), rotate(" + (this.gameobject.rot / Math.PI * 180).toFixed(0) + "), scale(" + this.gameobject.scale.x.toFixed(2) + " " + this.gameobject.scale.y.toFixed(2) + ")");
     }
     dispose() {
         if (this.svgElement) {

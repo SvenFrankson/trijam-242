@@ -7,6 +7,7 @@ class Main {
     public layers: SVGGElement[] = [];
     public gameobjects: UniqueList<Gameobject> = new UniqueList<Gameobject>();
     public blocks: Block[][];
+    public updates: UniqueList<() => void> = new UniqueList<() => void>();
 
     constructor() {
     }
@@ -85,11 +86,14 @@ class Main {
         });
 
         this._update = (dt: number) => {
+            this.updates.forEach(up => {
+                up();
+            });
             this.gameobjects.forEach(gameobject => {
                 gameobject.update(dt);
             });
             this.gameobjects.forEach(gameobject => {
-                gameobject.updatePosRot();
+                gameobject.updatePosRotScale();
             });
         }
     }
@@ -181,6 +185,14 @@ class Main {
         this.container.style.marginTop = marginTop + "px";
 
         this.containerRect = this.container.getBoundingClientRect();
+    }
+
+    public addUpdate(callback: () => void): void {
+        this.updates.push(callback);
+    }
+
+    public removeUpdate(callback: () => void): void {
+        this.updates.remove(callback);
     }
 
     private _update: (dt: number) => void;
