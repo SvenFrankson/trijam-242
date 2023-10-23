@@ -70,7 +70,7 @@ class Ball extends Gameobject {
         this.speed = new Vec2(0, 0);
         this.radius = 15;
         this.ghost = false;
-        this.speedVal = 300;
+        this.speedVal = 400;
     }
     instantiate() {
         super.instantiate();
@@ -127,9 +127,18 @@ class Ball extends Gameobject {
                         extraBall.draw();
                     }
                     hit.dispose();
+                    let remainingBlocks = this.main.gameobjects.filter(g => { return g instanceof Block; });
+                    if (remainingBlocks.length === 0) {
+                        this.main.gameover(true);
+                        return;
+                    }
                 }
                 else {
                     hit.expand();
+                    if (hit.i === 15 || hit.i === 16) {
+                        this.main.gameover(false);
+                        return;
+                    }
                     this.ghost = true;
                     if (this.color === BlockColor.Green) {
                         this.speed.x = Math.abs(this.speed.x);
@@ -312,6 +321,7 @@ class Main {
     constructor() {
         this.layers = [];
         this.gameobjects = new UniqueList();
+        this.score = 0;
         this.updates = new UniqueList();
         this._lastT = 0;
         this._mainLoop = () => {
@@ -374,6 +384,9 @@ class Main {
         this._onResize();
         this._mainLoop();
     }
+    clearLevel() {
+        this.dispose();
+    }
     makeLevel1() {
         this.blocks = [];
         for (let i = 0; i < 32; i++) {
@@ -412,13 +425,22 @@ class Main {
             ball2.speed.normalizeInPlace().scaleInPlace(ball2.speedVal);
         }
     }
+    setScore(score) {
+        this.score = score;
+        document.getElementsByClassName("score-value")[0].innerText = this.score.toFixed(0).padStart(5, "0");
+        document.getElementsByClassName("score-value")[1].innerText = this.score.toFixed(0).padStart(5, "0");
+    }
     start() {
+        document.getElementById("play").style.display = "none";
+        document.getElementById("game-over").style.display = "none";
         document.getElementById("credit").style.display = "none";
+        this.setScore(10000);
         this.gameobjects.forEach(gameobject => {
             gameobject.start();
             gameobject.draw();
         });
         this._update = (dt) => {
+            this.setScore(this.score - dt * 10);
             this.updates.forEach(up => {
                 up();
             });
@@ -439,6 +461,16 @@ class Main {
     }
     gameover(success) {
         this.stop();
+        document.getElementById("play").style.display = "block";
+        document.getElementById("game-over").style.display = "block";
+        if (success) {
+            document.getElementById("game-over").style.backgroundColor = "#0abdc6";
+            document.getElementById("success-value").innerText = "SUCCESS";
+        }
+        else {
+            document.getElementById("game-over").style.backgroundColor = "#711c91";
+            document.getElementById("success-value").innerText = "GAME OVER";
+        }
         document.getElementById("credit").style.display = "block";
     }
     dispose() {
@@ -467,10 +499,13 @@ class Main {
     }
 }
 window.addEventListener("load", () => {
+    document.getElementById("game-over").style.display = "none";
     let main = new Main();
     main.instantiate();
-    requestAnimationFrame(() => {
-        main.start();
+    document.getElementById("play").addEventListener("pointerup", () => {
+        requestAnimationFrame(() => {
+            main.start();
+        });
     });
 });
 /// <reference path="./engine/Gameobject.ts" />

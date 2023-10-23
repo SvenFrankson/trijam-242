@@ -7,6 +7,7 @@ class Main {
     public layers: SVGGElement[] = [];
     public gameobjects: UniqueList<Gameobject> = new UniqueList<Gameobject>();
     public blocks: Block[][];
+    public score: number = 0;
     public updates: UniqueList<() => void> = new UniqueList<() => void>();
 
     constructor() {
@@ -33,6 +34,10 @@ class Main {
 
         this._onResize();
         this._mainLoop();
+    }
+
+    public clearLevel(): void {
+        this.dispose();
     }
 
     public makeLevel1(): void {
@@ -81,9 +86,18 @@ class Main {
         }
     }
 
+    public setScore(score: number): void {
+        this.score = score;
+        (document.getElementsByClassName("score-value")[0] as HTMLElement).innerText = this.score.toFixed(0).padStart(5, "0");
+        (document.getElementsByClassName("score-value")[1] as HTMLElement).innerText = this.score.toFixed(0).padStart(5, "0");
+    }
+
     public start(): void {
         
+        document.getElementById("play").style.display = "none";
+        document.getElementById("game-over").style.display = "none";
         document.getElementById("credit").style.display = "none";
+        this.setScore(10000);
 
         this.gameobjects.forEach(gameobject => {
             gameobject.start();
@@ -91,6 +105,7 @@ class Main {
         });
 
         this._update = (dt: number) => {
+            this.setScore(this.score - dt * 10);
             this.updates.forEach(up => {
                 up();
             });
@@ -128,6 +143,16 @@ class Main {
 
     public gameover(success?: boolean): void {
         this.stop();
+        document.getElementById("play").style.display = "block";
+        document.getElementById("game-over").style.display = "block";
+        if (success) {
+            document.getElementById("game-over").style.backgroundColor = "#0abdc6";
+            document.getElementById("success-value").innerText = "SUCCESS";
+        }
+        else {
+            document.getElementById("game-over").style.backgroundColor = "#711c91";
+            document.getElementById("success-value").innerText = "GAME OVER";
+        }
         document.getElementById("credit").style.display = "block";
     }
 
@@ -204,9 +229,12 @@ class Main {
 }
 
 window.addEventListener("load", () => {
+    document.getElementById("game-over").style.display = "none";
     let main = new Main();
     main.instantiate();
-    requestAnimationFrame(() => {
-        main.start();
+    document.getElementById("play").addEventListener("pointerup", () => {
+        requestAnimationFrame(() => {
+            main.start();
+        });
     });
 });

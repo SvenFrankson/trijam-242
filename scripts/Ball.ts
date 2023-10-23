@@ -6,7 +6,7 @@ class Ball extends Gameobject {
     public speed: Vec2 = new Vec2(0, 0);
     public radius: number = 15;
     public ghost: boolean = false;
-    public speedVal: number = 300;
+    public speedVal: number = 400;
 
     constructor(main: Main, public color: BlockColor = BlockColor.Red) {
         super({}, main);
@@ -74,9 +74,18 @@ class Ball extends Gameobject {
                         extraBall.draw();
                     }
                     hit.dispose();
+                    let remainingBlocks = this.main.gameobjects.filter(g => { return g instanceof Block; });
+                    if (remainingBlocks.length === 0) {
+                        this.main.gameover(true);
+                        return;
+                    }
                 }
                 else {
                     hit.expand();
+                    if (hit.i === 15 || hit.i === 16) {
+                        this.main.gameover(false);
+                        return;
+                    }
                     this.ghost = true;
                     if (this.color === BlockColor.Green) {
                         this.speed.x = Math.abs(this.speed.x);
