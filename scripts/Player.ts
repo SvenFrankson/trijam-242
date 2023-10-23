@@ -44,8 +44,10 @@ class Player extends Gameobject {
     public update(dt: number): void {
         super.update(dt);
 
-        this.pos.y *= 0.5;
-        this.pos.y += this._inputPos.y * 0.5;
+        this.pos.y *= 0.8;
+        this.pos.y += this._inputPos.y * 0.2;
+        this.pos.y = Math.max(this.pos.y, 105);
+        this.pos.y = Math.min(this.pos.y, 895);
 
         this.main.gameobjects.forEach(ball => {
             if (ball instanceof Ball) {
@@ -55,10 +57,10 @@ class Player extends Gameobject {
                     ball.ghost = false;
                     let dy = ball.pos.y - this.pos.y;
                     ball.speed.y += 3 * dy;
-                    ball.speed.normalizeInPlace().scaleInPlace(300);
-                    if (Math.abs(ball.speed.x) < 50) {
-                        ball.speed.x = Math.sign(ball.speed.x) * Math.abs(ball.speed.x);
-                        ball.speed.normalizeInPlace().scaleInPlace(300);
+                    ball.speed.normalizeInPlace().scaleInPlace(ball.speedVal);
+                    if (Math.abs(ball.speed.x) < ball.speedVal / 5) {
+                        ball.speed.x = Math.sign(ball.speed.x) * ball.speedVal / 5;
+                        ball.speed.normalizeInPlace().scaleInPlace(ball.speedVal);
                     }
                 }
             }

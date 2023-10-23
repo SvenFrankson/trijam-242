@@ -43,14 +43,16 @@ class Main {
 
         for (let i = 0; i < 5; i++) {
             for (let j = 0; j < 10; j++) {
-                let block = new Block(i, j, this, BlockColor.Green);
+                let extraBall = i === 2 && (j ===2 || j === 7);
+                let block = new Block(i, j, this, BlockColor.Green, extraBall);
                 block.instantiate();
             }
         }
 
         for (let i = 32 - 5; i < 32; i++) {
             for (let j = 0; j < 10; j++) {
-                let block = new Block(i, j, this, BlockColor.Red);
+                let extraBall = i === 29 && (j ===2 || j === 7);
+                let block = new Block(i, j, this, BlockColor.Red, extraBall);
                 block.instantiate();
             }
         }
@@ -66,7 +68,7 @@ class Main {
             
             ball.speed.x = -1;
             ball.speed.y = -1 + 2 * Math.random();
-            ball.speed.normalizeInPlace().scaleInPlace(300);
+            ball.speed.normalizeInPlace().scaleInPlace(ball.speedVal);
     
             let ball2 = new Ball(this, BlockColor.Green);
             ball2.pos.x = 900;
@@ -75,7 +77,7 @@ class Main {
             
             ball2.speed.x = 1;
             ball2.speed.y = -1 + 2 * Math.random();
-            ball2.speed.normalizeInPlace().scaleInPlace(300);
+            ball2.speed.normalizeInPlace().scaleInPlace(ball2.speedVal);
         }
     }
 

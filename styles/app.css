@@ -57,6 +57,12 @@ body {
     stroke-width: 2;
 }
 
+.extraball-icon {
+    fill: none;
+    stroke: #d1f7ff;
+    stroke-width: 2;
+}
+
 .block.green {
     fill:#05d9e8;
 }

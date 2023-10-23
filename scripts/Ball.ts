@@ -6,6 +6,7 @@ class Ball extends Gameobject {
     public speed: Vec2 = new Vec2(0, 0);
     public radius: number = 15;
     public ghost: boolean = false;
+    public speedVal: number = 300;
 
     constructor(main: Main, public color: BlockColor = BlockColor.Red) {
         super({}, main);
@@ -62,6 +63,16 @@ class Ball extends Gameobject {
             if (hit) {
                 this.speed.mirrorInPlace(axis);
                 if (hit.color != this.color) {
+                    if (hit.extraBall) {
+                        let extraBall = new Ball(this.main, this.color);
+                        extraBall.pos.copyFrom(this.pos);
+                        extraBall.speed.copyFrom(this.speed);
+                        extraBall.speed.y += - 50 + Math.random() * 100;
+                        extraBall.speed.normalizeInPlace().scaleInPlace(extraBall.speedVal);
+                        extraBall.instantiate();
+                        extraBall.start();
+                        extraBall.draw();
+                    }
                     hit.dispose();
                 }
                 else {

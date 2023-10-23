@@ -70,6 +70,7 @@ class Ball extends Gameobject {
         this.speed = new Vec2(0, 0);
         this.radius = 15;
         this.ghost = false;
+        this.speedVal = 300;
     }
     instantiate() {
         super.instantiate();
@@ -115,6 +116,16 @@ class Ball extends Gameobject {
             if (hit) {
                 this.speed.mirrorInPlace(axis);
                 if (hit.color != this.color) {
+                    if (hit.extraBall) {
+                        let extraBall = new Ball(this.main, this.color);
+                        extraBall.pos.copyFrom(this.pos);
+                        extraBall.speed.copyFrom(this.speed);
+                        extraBall.speed.y += -50 + Math.random() * 100;
+                        extraBall.speed.normalizeInPlace().scaleInPlace(extraBall.speedVal);
+                        extraBall.instantiate();
+                        extraBall.start();
+                        extraBall.draw();
+                    }
                     hit.dispose();
                 }
                 else {
@@ -162,11 +173,12 @@ var BlockColor;
     BlockColor[BlockColor["Green"] = 1] = "Green";
 })(BlockColor || (BlockColor = {}));
 class Block extends Gameobject {
-    constructor(i, j, main, color = BlockColor.Red) {
+    constructor(i, j, main, color = BlockColor.Red, extraBall = false) {
         super({}, main);
         this.i = i;
         this.j = j;
         this.color = color;
+        this.extraBall = extraBall;
         this.animateSize = AnimationFactory.EmptyVec2Callback;
         this.pos.x = 25 + i * 50;
         this.pos.y = 50 + j * 100;
@@ -186,6 +198,13 @@ class Block extends Gameobject {
             layer: 2
         }));
         this._renderer.addClass("block");
+        if (this.extraBall) {
+            this._extraBallIcon = this.addComponent(new CircleRenderer(this, {
+                radius: 15,
+                layer: 3
+            }));
+            this._extraBallIcon.addClass("ball");
+        }
         this.setColor(this.color);
     }
     start() {
@@ -205,9 +224,15 @@ class Block extends Gameobject {
         this.color = color;
         if (this.color === BlockColor.Red) {
             this._renderer.addClass("red");
+            if (this.extraBall) {
+                this._extraBallIcon.addClass("green");
+            }
         }
         else if (this.color === BlockColor.Green) {
             this._renderer.addClass("green");
+            if (this.extraBall) {
+                this._extraBallIcon.addClass("red");
+            }
         }
     }
     intersectsBall(ball, margin = 0) {
@@ -356,13 +381,15 @@ class Main {
         }
         for (let i = 0; i < 5; i++) {
             for (let j = 0; j < 10; j++) {
-                let block = new Block(i, j, this, BlockColor.Green);
+                let extraBall = i === 2 && (j === 2 || j === 7);
+                let block = new Block(i, j, this, BlockColor.Green, extraBall);
                 block.instantiate();
             }
         }
         for (let i = 32 - 5; i < 32; i++) {
             for (let j = 0; j < 10; j++) {
-                let block = new Block(i, j, this, BlockColor.Red);
+                let extraBall = i === 29 && (j === 2 || j === 7);
+                let block = new Block(i, j, this, BlockColor.Red, extraBall);
                 block.instantiate();
             }
         }
@@ -375,14 +402,14 @@ class Main {
             ball.instantiate();
             ball.speed.x = -1;
             ball.speed.y = -1 + 2 * Math.random();
-            ball.speed.normalizeInPlace().scaleInPlace(300);
+            ball.speed.normalizeInPlace().scaleInPlace(ball.speedVal);
             let ball2 = new Ball(this, BlockColor.Green);
             ball2.pos.x = 900;
             ball2.pos.y = 400;
             ball2.instantiate();
             ball2.speed.x = 1;
             ball2.speed.y = -1 + 2 * Math.random();
-            ball2.speed.normalizeInPlace().scaleInPlace(300);
+            ball2.speed.normalizeInPlace().scaleInPlace(ball2.speedVal);
         }
     }
     start() {
@@ -486,8 +513,10 @@ class Player extends Gameobject {
     }
     update(dt) {
         super.update(dt);
-        this.pos.y *= 0.5;
-        this.pos.y += this._inputPos.y * 0.5;
+        this.pos.y *= 0.8;
+        this.pos.y += this._inputPos.y * 0.2;
+        this.pos.y = Math.max(this.pos.y, 105);
+        this.pos.y = Math.min(this.pos.y, 895);
         this.main.gameobjects.forEach(ball => {
             if (ball instanceof Ball) {
                 if (this.intersectsBall(ball)) {
@@ -496,10 +525,10 @@ class Player extends Gameobject {
                     ball.ghost = false;
                     let dy = ball.pos.y - this.pos.y;
                     ball.speed.y += 3 * dy;
-                    ball.speed.normalizeInPlace().scaleInPlace(300);
-                    if (Math.abs(ball.speed.x) < 50) {
-                        ball.speed.x = Math.sign(ball.speed.x) * Math.abs(ball.speed.x);
-                        ball.speed.normalizeInPlace().scaleInPlace(300);
+                    ball.speed.normalizeInPlace().scaleInPlace(ball.speedVal);
+                    if (Math.abs(ball.speed.x) < ball.speedVal / 5) {
+                        ball.speed.x = Math.sign(ball.speed.x) * ball.speedVal / 5;
+                        ball.speed.normalizeInPlace().scaleInPlace(ball.speedVal);
                     }
                 }
             }

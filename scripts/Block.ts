@@ -8,9 +8,10 @@ enum BlockColor {
 class Block extends Gameobject {
 
     protected _renderer: PathRenderer;
+    protected _extraBallIcon: CircleRenderer;
     public animateSize = AnimationFactory.EmptyVec2Callback;
     
-    constructor(public i: number, public j: number, main: Main, public color: BlockColor = BlockColor.Red) {
+    constructor(public i: number, public j: number, main: Main, public color: BlockColor = BlockColor.Red, public extraBall: boolean = false) {
         super({ }, main);
         this.pos.x = 25 + i * 50;
         this.pos.y = 50 + j * 100;
@@ -34,6 +35,20 @@ class Block extends Gameobject {
             })
         ) as PathRenderer;
         this._renderer.addClass("block");
+
+        if (this.extraBall) {
+            this._extraBallIcon = this.addComponent(
+                new CircleRenderer(
+                    this,
+                    {
+                        radius: 15,
+                        layer: 3
+                    }
+                )
+            ) as CircleRenderer;
+            this._extraBallIcon.addClass("ball");
+        }
+        
         this.setColor(this.color);
     }
 
@@ -58,9 +73,15 @@ class Block extends Gameobject {
         this.color = color;
         if (this.color === BlockColor.Red) {
             this._renderer.addClass("red");
+            if (this.extraBall) {
+                this._extraBallIcon.addClass("green");
+            }
         }
         else if (this.color === BlockColor.Green) {
             this._renderer.addClass("green");
+            if (this.extraBall) {
+                this._extraBallIcon.addClass("red");
+            }
         }
     }
 
