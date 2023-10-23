@@ -15,12 +15,12 @@ body {
 
 #main-container {
     position: fixed;
-    background-color: darkcyan;
-    outline: 2px solid darkcyan;
+    background-color: #01012b;
+    outline: 2px solid #d1f7ff;
 }
 
 #credit {
-    color: white;
+    color: #d1f7ff;
     position: fixed;
     font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
@@ -32,36 +32,43 @@ body {
     background-color: black;
     border-radius: 20px;
     text-align: center;
-    border: 2px solid white;
+    border: 2px solid #d1f7ff;
     right: 15px;
     bottom: 15px;
     z-index: 10;
 }
 
+.player {
+    fill: #005678;
+    stroke: #d1f7ff;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
 .block {
     fill: none;
-    stroke: white;
+    stroke: #d1f7ff;
     stroke-width: 2;
 }
 
 .ball {
     fill: none;
-    stroke: white;
+    stroke: #d1f7ff;
     stroke-width: 2;
 }
 
 .block.green {
-    fill: green;
+    fill:#05d9e8;
 }
 
 .block.red {
-    fill: red;
+    fill:#ff2a6d;
 }
 
 .ball.green {
-    fill: green;
+    fill:#05d9e8;
 }
 
 .ball.red {
-    fill: red;
+    fill:#ff2a6d;
 }

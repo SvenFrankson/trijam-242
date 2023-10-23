@@ -366,21 +366,23 @@ class Main {
                 block.instantiate();
             }
         }
-        for (let n = 0; n < 2; n++) {
-            let ball = new Ball(this, BlockColor.Green);
-            ball.pos.x = 800;
+        let player = new Player(this);
+        player.instantiate();
+        for (let n = 0; n < 1; n++) {
+            let ball = new Ball(this, BlockColor.Red);
+            ball.pos.x = 700;
             ball.pos.y = 400;
             ball.instantiate();
-            let a = Math.random() * 2 * Math.PI;
-            ball.speed.x = Math.cos(a) * 400;
-            ball.speed.y = Math.sin(a) * 400;
-            let ball2 = new Ball(this, BlockColor.Red);
-            ball2.pos.x = 800;
+            ball.speed.x = -1;
+            ball.speed.y = -1 + 2 * Math.random();
+            ball.speed.normalizeInPlace().scaleInPlace(300);
+            let ball2 = new Ball(this, BlockColor.Green);
+            ball2.pos.x = 900;
             ball2.pos.y = 400;
             ball2.instantiate();
-            let a2 = Math.random() * 2 * Math.PI;
-            ball2.speed.x = Math.cos(a2) * 400;
-            ball2.speed.y = Math.sin(a2) * 400;
+            ball2.speed.x = 1;
+            ball2.speed.y = -1 + 2 * Math.random();
+            ball2.speed.normalizeInPlace().scaleInPlace(300);
         }
     }
     start() {
@@ -424,7 +426,7 @@ class Main {
     clientXYToContainerXYToRef(clientX, clientY, ref) {
         let px = clientX - this.containerRect.left;
         let py = clientY - this.containerRect.top;
-        px = px / this.containerRect.width * 1000;
+        px = px / this.containerRect.width * 1600;
         py = py / this.containerRect.height * 1000;
         ref.x = px;
         ref.y = py;
@@ -444,6 +446,92 @@ window.addEventListener("load", () => {
         main.start();
     });
 });
+/// <reference path="./engine/Gameobject.ts" />
+class Player extends Gameobject {
+    constructor(main) {
+        super({}, main);
+        this._pointerDown = false;
+        this._inputPos = new Vec2(800, 500);
+        this.pointerMove = (ev) => {
+            this.main.clientXYToContainerXYToRef(ev.clientX, ev.clientY, this._inputPos);
+        };
+        this.pointerDown = (ev) => {
+            this.main.clientXYToContainerXYToRef(ev.clientX, ev.clientY, this._inputPos);
+        };
+        this.pos.x = 800;
+        this.pos.y = 500;
+    }
+    instantiate() {
+        super.instantiate();
+        this._renderer = this.addComponent(new PathRenderer(this, {
+            points: [
+                new Vec2(-8, -100),
+                new Vec2(8, -100),
+                new Vec2(15, -93),
+                new Vec2(15, 93),
+                new Vec2(8, 100),
+                new Vec2(-8, 100),
+                new Vec2(-15, 93),
+                new Vec2(-15, -93)
+            ],
+            close: true,
+            layer: 2
+        }));
+        this._renderer.addClass("player");
+        window.addEventListener("pointermove", this.pointerMove);
+        window.addEventListener("pointerdown", this.pointerDown);
+    }
+    start() {
+        super.start();
+    }
+    update(dt) {
+        super.update(dt);
+        this.pos.y *= 0.5;
+        this.pos.y += this._inputPos.y * 0.5;
+        this.main.gameobjects.forEach(ball => {
+            if (ball instanceof Ball) {
+                if (this.intersectsBall(ball)) {
+                    let sign = Math.sign(ball.pos.x - 800);
+                    ball.speed.x = sign * Math.abs(ball.speed.x);
+                    ball.ghost = false;
+                    let dy = ball.pos.y - this.pos.y;
+                    ball.speed.y += 3 * dy;
+                    ball.speed.normalizeInPlace().scaleInPlace(300);
+                    if (Math.abs(ball.speed.x) < 50) {
+                        ball.speed.x = Math.sign(ball.speed.x) * Math.abs(ball.speed.x);
+                        ball.speed.normalizeInPlace().scaleInPlace(300);
+                    }
+                }
+            }
+        });
+    }
+    stop() {
+        super.stop();
+    }
+    dispose() {
+        super.dispose();
+    }
+    intersectsBall(ball, margin = 0) {
+        let xMin = this.pos.x - 15;
+        let xMax = this.pos.x + 15;
+        let yMin = this.pos.y - 100;
+        let yMax = this.pos.y + 100;
+        let r = ball.radius + margin;
+        if (ball.pos.x - r > xMax) {
+            return false;
+        }
+        if (ball.pos.y - r > yMax) {
+            return false;
+        }
+        if (ball.pos.x + r < xMin) {
+            return false;
+        }
+        if (ball.pos.y + r < yMin) {
+            return false;
+        }
+        return true;
+    }
+}
 class AnimationFactory {
     static CreateWait(owner, onUpdateCallback) {
         return (duration) => {

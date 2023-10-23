@@ -55,24 +55,27 @@ class Main {
             }
         }
 
-        for (let n = 0; n < 2; n++) {
-            let ball = new Ball(this, BlockColor.Green);
-            ball.pos.x = 800;
+        let player = new Player(this);
+        player.instantiate();
+
+        for (let n = 0; n < 1; n++) {
+            let ball = new Ball(this, BlockColor.Red);
+            ball.pos.x = 700;
             ball.pos.y = 400;
             ball.instantiate();
             
-            let a = Math.random() * 2 * Math.PI;
-            ball.speed.x = Math.cos(a) * 400;
-            ball.speed.y = Math.sin(a) * 400;
+            ball.speed.x = -1;
+            ball.speed.y = -1 + 2 * Math.random();
+            ball.speed.normalizeInPlace().scaleInPlace(300);
     
-            let ball2 = new Ball(this, BlockColor.Red);
-            ball2.pos.x = 800;
+            let ball2 = new Ball(this, BlockColor.Green);
+            ball2.pos.x = 900;
             ball2.pos.y = 400;
             ball2.instantiate();
             
-            let a2 = Math.random() * 2 * Math.PI;
-            ball2.speed.x = Math.cos(a2) * 400;
-            ball2.speed.y = Math.sin(a2) * 400;
+            ball2.speed.x = 1;
+            ball2.speed.y = -1 + 2 * Math.random();
+            ball2.speed.normalizeInPlace().scaleInPlace(300);
         }
     }
 
@@ -141,7 +144,7 @@ class Main {
         let px = clientX - this.containerRect.left;
         let py = clientY - this.containerRect.top;
 
-        px = px / this.containerRect.width * 1000;
+        px = px / this.containerRect.width * 1600;
         py = py / this.containerRect.height * 1000;
 
         ref.x = px;
