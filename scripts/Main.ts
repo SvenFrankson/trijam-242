@@ -54,15 +54,25 @@ class Main {
             }
         }
 
-        let ball = new Ball(this);
-        ball.pos.x = 800;
-        ball.pos.y = 400;
-        ball.instantiate();
-        
-        let a = Math.random() * 2 * Math.PI;
-        ball.speed.x = Math.cos(a) * 400;
-        ball.speed.y = Math.sin(a) * 400;
-
+        for (let n = 0; n < 2; n++) {
+            let ball = new Ball(this, BlockColor.Green);
+            ball.pos.x = 800;
+            ball.pos.y = 400;
+            ball.instantiate();
+            
+            let a = Math.random() * 2 * Math.PI;
+            ball.speed.x = Math.cos(a) * 400;
+            ball.speed.y = Math.sin(a) * 400;
+    
+            let ball2 = new Ball(this, BlockColor.Red);
+            ball2.pos.x = 800;
+            ball2.pos.y = 400;
+            ball2.instantiate();
+            
+            let a2 = Math.random() * 2 * Math.PI;
+            ball2.speed.x = Math.cos(a2) * 400;
+            ball2.speed.y = Math.sin(a2) * 400;
+        }
     }
 
     public start(): void {

@@ -2,20 +2,21 @@
 
 class Ball extends Gameobject {
 
-    protected _circleRenderer: CircleRenderer;
+    protected _renderer: CircleRenderer;
     public speed: Vec2 = new Vec2(0, 0);
     public radius: number = 15;
-    public ignore: Block[] = [];
+    public ghost: boolean = false;
 
-    constructor(main: Main) {
+    constructor(main: Main, public color: BlockColor = BlockColor.Red) {
         super({}, main);
     }
 
     public instantiate(): void {
         super.instantiate();
 
-        this._circleRenderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 3 })) as CircleRenderer;
-        this._circleRenderer.addClass("ball");
+        this._renderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 3 })) as CircleRenderer;
+        this._renderer.addClass("ball");
+        this.setColor(this.color);
     }
 
     public start(): void {
@@ -45,46 +46,61 @@ class Ball extends Gameobject {
             this.speed.y *= -1;
         }
 
-        let hit: Block;
-        let axis: Vec2;
-        this.main.gameobjects.forEach(other => {
-            if (other instanceof Block) {
-                if (this.ignore.indexOf(other) === -1) {
+        if (!this.ghost) {
+            let hit: Block;
+            let axis: Vec2;
+            this.main.gameobjects.forEach(other => {
+                if (other instanceof Block) {
                     let currHit = other.intersectsBall(this)
                     if (currHit.hit) {
                         hit = other;
                         axis = currHit.axis;
                     }
                 }
-            }
-        });
+            });
 
-        if (hit) {
-            this.speed.mirrorInPlace(axis);
-            if (hit.color === BlockColor.Green) {
-                hit.dispose();
-            }
-            else {
-                let newBlocks = hit.expand();
-                newBlocks.forEach(block => {
-                    this.ignore.push(block);
-                })
+            if (hit) {
+                this.speed.mirrorInPlace(axis);
+                if (hit.color != this.color) {
+                    hit.dispose();
+                }
+                else {
+                    hit.expand();
+                    this.ghost = true;
+                    if (this.color === BlockColor.Green) {
+                        this.speed.x = Math.abs(this.speed.x);
+                    }
+                    else {
+                        this.speed.x = - Math.abs(this.speed.x);
+                    }
+                }
             }
         }
-
-        let n = 0;
-        while (n < this.ignore.length) {
-            let check = this.ignore[n];
-            if (check.intersectsBall(this, 5).hit) {
-                n++;
+        else {
+            if (this.color === BlockColor.Green) {
+                if (this.pos.x > 800) {
+                    this.ghost = false;
+                }
             }
             else {
-                this.ignore.splice(n, 1);
+                if (this.pos.x < 800) {
+                    this.ghost = false;
+                }
             }
         }
     }
 
     public stop(): void {
         super.stop();
+    }
+
+    public setColor(color: BlockColor): void {
+        this.color = color;
+        if (this.color === BlockColor.Red) {
+            this._renderer.addClass("red");
+        }
+        else if (this.color === BlockColor.Green) {
+            this._renderer.addClass("green");
+        }
     }
 }

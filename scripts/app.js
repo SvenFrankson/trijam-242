@@ -60,16 +60,18 @@ class Gameobject {
 }
 /// <reference path="./engine/Gameobject.ts" />
 class Ball extends Gameobject {
-    constructor(main) {
+    constructor(main, color = BlockColor.Red) {
         super({}, main);
+        this.color = color;
         this.speed = new Vec2(0, 0);
         this.radius = 15;
-        this.ignore = [];
+        this.ghost = false;
     }
     instantiate() {
         super.instantiate();
-        this._circleRenderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 3 }));
-        this._circleRenderer.addClass("ball");
+        this._renderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 3 }));
+        this._renderer.addClass("ball");
+        this.setColor(this.color);
     }
     start() {
         super.start();
@@ -94,44 +96,59 @@ class Ball extends Gameobject {
             this.pos.y = 1000 - this.radius;
             this.speed.y *= -1;
         }
-        let hit;
-        let axis;
-        this.main.gameobjects.forEach(other => {
-            if (other instanceof Block) {
-                if (this.ignore.indexOf(other) === -1) {
+        if (!this.ghost) {
+            let hit;
+            let axis;
+            this.main.gameobjects.forEach(other => {
+                if (other instanceof Block) {
                     let currHit = other.intersectsBall(this);
                     if (currHit.hit) {
                         hit = other;
                         axis = currHit.axis;
                     }
                 }
-            }
-        });
-        if (hit) {
-            this.speed.mirrorInPlace(axis);
-            if (hit.color === BlockColor.Green) {
-                hit.dispose();
-            }
-            else {
-                let newBlocks = hit.expand();
-                newBlocks.forEach(block => {
-                    this.ignore.push(block);
-                });
+            });
+            if (hit) {
+                this.speed.mirrorInPlace(axis);
+                if (hit.color != this.color) {
+                    hit.dispose();
+                }
+                else {
+                    hit.expand();
+                    this.ghost = true;
+                    if (this.color === BlockColor.Green) {
+                        this.speed.x = Math.abs(this.speed.x);
+                    }
+                    else {
+                        this.speed.x = -Math.abs(this.speed.x);
+                    }
+                }
             }
         }
-        let n = 0;
-        while (n < this.ignore.length) {
-            let check = this.ignore[n];
-            if (check.intersectsBall(this, 5).hit) {
-                n++;
+        else {
+            if (this.color === BlockColor.Green) {
+                if (this.pos.x > 800) {
+                    this.ghost = false;
+                }
             }
             else {
-                this.ignore.splice(n, 1);
+                if (this.pos.x < 800) {
+                    this.ghost = false;
+                }
             }
         }
     }
     stop() {
         super.stop();
+    }
+    setColor(color) {
+        this.color = color;
+        if (this.color === BlockColor.Red) {
+            this._renderer.addClass("red");
+        }
+        else if (this.color === BlockColor.Green) {
+            this._renderer.addClass("green");
+        }
     }
 }
 /// <reference path="./engine/Gameobject.ts" />
@@ -188,10 +205,10 @@ class Block extends Gameobject {
         }
     }
     intersectsBall(ball, margin = 0) {
-        let xMin = this.pos.x - 20;
-        let xMax = this.pos.x + 20;
-        let yMin = this.pos.y - 45;
-        let yMax = this.pos.y + 45;
+        let xMin = this.pos.x - 25;
+        let xMax = this.pos.x + 25;
+        let yMin = this.pos.y - 50;
+        let yMax = this.pos.y + 50;
         let r = ball.radius + margin;
         if (ball.pos.x - r > xMax) {
             return { hit: false };
@@ -206,8 +223,8 @@ class Block extends Gameobject {
             return { hit: false };
         }
         let axis = ball.pos.subtract(this.pos);
-        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - r - 20);
-        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - r - 45);
+        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - r - 25);
+        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - r - 50);
         if (xDepth < yDepth) {
             axis.y = 0;
             axis.normalizeInPlace();
@@ -330,13 +347,22 @@ class Main {
                 block.instantiate();
             }
         }
-        let ball = new Ball(this);
-        ball.pos.x = 800;
-        ball.pos.y = 400;
-        ball.instantiate();
-        let a = Math.random() * 2 * Math.PI;
-        ball.speed.x = Math.cos(a) * 400;
-        ball.speed.y = Math.sin(a) * 400;
+        for (let n = 0; n < 2; n++) {
+            let ball = new Ball(this, BlockColor.Green);
+            ball.pos.x = 800;
+            ball.pos.y = 400;
+            ball.instantiate();
+            let a = Math.random() * 2 * Math.PI;
+            ball.speed.x = Math.cos(a) * 400;
+            ball.speed.y = Math.sin(a) * 400;
+            let ball2 = new Ball(this, BlockColor.Red);
+            ball2.pos.x = 800;
+            ball2.pos.y = 400;
+            ball2.instantiate();
+            let a2 = Math.random() * 2 * Math.PI;
+            ball2.speed.x = Math.cos(a2) * 400;
+            ball2.speed.y = Math.sin(a2) * 400;
+        }
     }
     start() {
         document.getElementById("credit").style.display = "none";

@@ -63,10 +63,10 @@ class Block extends Gameobject {
     }
 
     public intersectsBall(ball: Ball, margin: number = 0): { hit: boolean, axis?: Vec2 } {
-        let xMin = this.pos.x - 20;
-        let xMax = this.pos.x + 20;
-        let yMin = this.pos.y - 45;
-        let yMax = this.pos.y + 45;
+        let xMin = this.pos.x - 25;
+        let xMax = this.pos.x + 25;
+        let yMin = this.pos.y - 50;
+        let yMax = this.pos.y + 50;
 
         let r = ball.radius + margin;
 
@@ -84,8 +84,8 @@ class Block extends Gameobject {
         }
 
         let axis = ball.pos.subtract(this.pos);
-        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - r - 20);
-        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - r - 45);
+        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - r - 25);
+        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - r - 50);
         if (xDepth < yDepth) {
             axis.y = 0;
             axis.normalizeInPlace();

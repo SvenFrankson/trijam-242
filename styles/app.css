@@ -45,7 +45,7 @@ body {
 }
 
 .ball {
-    fill: blue;
+    fill: none;
     stroke: white;
     stroke-width: 2;
 }
@@ -55,5 +55,13 @@ body {
 }
 
 .block.red {
+    fill: red;
+}
+
+.ball.green {
+    fill: green;
+}
+
+.ball.red {
     fill: red;
 }
