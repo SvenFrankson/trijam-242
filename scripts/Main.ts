@@ -60,8 +60,8 @@ class Main {
         ball.instantiate();
         
         let a = Math.random() * 2 * Math.PI;
-        ball.speed.x = Math.cos(a) * 200;
-        ball.speed.y = Math.sin(a) * 200;
+        ball.speed.x = Math.cos(a) * 400;
+        ball.speed.y = Math.sin(a) * 400;
 
     }
 

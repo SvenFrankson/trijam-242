@@ -44,9 +44,22 @@ class Ball extends Gameobject {
             this.speed.y *= -1;
         }
 
+        let hit: Block;
+        let axis: Vec2;
         this.main.gameobjects.forEach(other => {
-            
+            if (other instanceof Block) {
+                let currHit = other.intersectsBall(this)
+                if (currHit.hit) {
+                    hit = other;
+                    axis = currHit.axis;
+                }
+            }
         });
+
+        if (hit) {
+            this.speed.mirrorInPlace(axis);
+            hit.dispose();
+        }
     }
 
     public stop(): void {

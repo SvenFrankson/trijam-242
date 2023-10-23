@@ -55,4 +55,37 @@ class Block extends Gameobject {
             this._renderer.addClass("green");
         }
     }
+
+    public intersectsBall(ball: Ball): { hit: boolean, axis?: Vec2 } {
+        let xMin = this.pos.x - 20;
+        let xMax = this.pos.x + 20;
+        let yMin = this.pos.y - 45;
+        let yMax = this.pos.y + 45;
+
+        if (ball.pos.x - ball.radius > xMax) {
+            return { hit: false };
+        }
+        if (ball.pos.y - ball.radius > yMax) {
+            return { hit: false };
+        }
+        if (ball.pos.x + ball.radius < xMin) {
+            return { hit: false };
+        }
+        if (ball.pos.y + ball.radius < yMin) {
+            return { hit: false };
+        }
+
+        let axis = ball.pos.subtract(this.pos);
+        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - ball.radius - 20);
+        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - ball.radius - 45);
+        if (xDepth < yDepth) {
+            axis.y = 0;
+            axis.normalizeInPlace();
+        }
+        else {
+            axis.x = 0;
+            axis.normalizeInPlace();
+        }
+        return { hit: true, axis: axis };
+    }
 }

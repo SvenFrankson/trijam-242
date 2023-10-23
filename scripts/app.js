@@ -93,8 +93,21 @@ class Ball extends Gameobject {
             this.pos.y = 1000 - this.radius;
             this.speed.y *= -1;
         }
+        let hit;
+        let axis;
         this.main.gameobjects.forEach(other => {
+            if (other instanceof Block) {
+                let currHit = other.intersectsBall(this);
+                if (currHit.hit) {
+                    hit = other;
+                    axis = currHit.axis;
+                }
+            }
         });
+        if (hit) {
+            this.speed.mirrorInPlace(axis);
+            hit.dispose();
+        }
     }
     stop() {
         super.stop();
@@ -147,6 +160,36 @@ class Block extends Gameobject {
         else if (this.color === BlockColor.Green) {
             this._renderer.addClass("green");
         }
+    }
+    intersectsBall(ball) {
+        let xMin = this.pos.x - 20;
+        let xMax = this.pos.x + 20;
+        let yMin = this.pos.y - 45;
+        let yMax = this.pos.y + 45;
+        if (ball.pos.x - ball.radius > xMax) {
+            return { hit: false };
+        }
+        if (ball.pos.y - ball.radius > yMax) {
+            return { hit: false };
+        }
+        if (ball.pos.x + ball.radius < xMin) {
+            return { hit: false };
+        }
+        if (ball.pos.y + ball.radius < yMin) {
+            return { hit: false };
+        }
+        let axis = ball.pos.subtract(this.pos);
+        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - ball.radius - 20);
+        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - ball.radius - 45);
+        if (xDepth < yDepth) {
+            axis.y = 0;
+            axis.normalizeInPlace();
+        }
+        else {
+            axis.x = 0;
+            axis.normalizeInPlace();
+        }
+        return { hit: true, axis: axis };
     }
 }
 /// <reference path="./engine/Gameobject.ts" />
@@ -237,8 +280,8 @@ class Main {
         ball.pos.y = 400;
         ball.instantiate();
         let a = Math.random() * 2 * Math.PI;
-        ball.speed.x = Math.cos(a) * 200;
-        ball.speed.y = Math.sin(a) * 200;
+        ball.speed.x = Math.cos(a) * 400;
+        ball.speed.y = Math.sin(a) * 400;
     }
     start() {
         document.getElementById("credit").style.display = "none";
