@@ -13,6 +13,7 @@ class Block extends Gameobject {
         super({ }, main);
         this.pos.x = 25 + i * 50;
         this.pos.y = 50 + j * 100;
+        this.main.blocks[i][j] = this;
     }
 
     public instantiate(): void {
@@ -46,6 +47,11 @@ class Block extends Gameobject {
         super.stop();
     }
 
+    public dispose(): void {
+        this.main.blocks[this.i][this.j] = undefined;
+        super.dispose();
+    }
+
     public setColor(color: BlockColor): void {
         this.color = color;
         if (this.color === BlockColor.Red) {
@@ -56,28 +62,30 @@ class Block extends Gameobject {
         }
     }
 
-    public intersectsBall(ball: Ball): { hit: boolean, axis?: Vec2 } {
+    public intersectsBall(ball: Ball, margin: number = 0): { hit: boolean, axis?: Vec2 } {
         let xMin = this.pos.x - 20;
         let xMax = this.pos.x + 20;
         let yMin = this.pos.y - 45;
         let yMax = this.pos.y + 45;
 
-        if (ball.pos.x - ball.radius > xMax) {
+        let r = ball.radius + margin;
+
+        if (ball.pos.x - r > xMax) {
             return { hit: false };
         }
-        if (ball.pos.y - ball.radius > yMax) {
+        if (ball.pos.y - r > yMax) {
             return { hit: false };
         }
-        if (ball.pos.x + ball.radius < xMin) {
+        if (ball.pos.x + r < xMin) {
             return { hit: false };
         }
-        if (ball.pos.y + ball.radius < yMin) {
+        if (ball.pos.y + r < yMin) {
             return { hit: false };
         }
 
         let axis = ball.pos.subtract(this.pos);
-        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - ball.radius - 20);
-        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - ball.radius - 45);
+        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - r - 20);
+        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - r - 45);
         if (xDepth < yDepth) {
             axis.y = 0;
             axis.normalizeInPlace();
@@ -87,5 +95,34 @@ class Block extends Gameobject {
             axis.normalizeInPlace();
         }
         return { hit: true, axis: axis };
+    }
+
+    public expand(): Block[] {
+        let newBlocks: Block[] = [];
+        if (this.main.blocks[this.i + 1]) {
+            if (!this.main.blocks[this.i + 1][this.j]) {
+                let iNext = new Block(this.i + 1, this.j, this.main, this.color);
+                iNext.instantiate();
+                newBlocks.push(iNext);
+            }
+        }
+        if (this.main.blocks[this.i - 1]) {
+            if (!this.main.blocks[this.i - 1][this.j]) {
+                let iPrev = new Block(this.i - 1, this.j, this.main, this.color);
+                iPrev.instantiate();
+                newBlocks.push(iPrev);
+            }
+        }
+        if (!this.main.blocks[this.i][this.j + 1]) {
+            let jNext = new Block(this.i, this.j + 1, this.main, this.color);
+            jNext.instantiate();
+            newBlocks.push(jNext);
+        }
+        if (!this.main.blocks[this.i][this.j - 1]) {
+            let jPrev = new Block(this.i, this.j - 1, this.main, this.color);
+            jPrev.instantiate();
+            newBlocks.push(jPrev);
+        }
+        return newBlocks;
     }
 }

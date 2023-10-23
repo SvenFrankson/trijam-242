@@ -63,11 +63,12 @@ class Ball extends Gameobject {
     constructor(main) {
         super({}, main);
         this.speed = new Vec2(0, 0);
-        this.radius = 20;
+        this.radius = 15;
+        this.ignore = [];
     }
     instantiate() {
         super.instantiate();
-        this._circleRenderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 2 }));
+        this._circleRenderer = this.addComponent(new CircleRenderer(this, { radius: this.radius, layer: 3 }));
         this._circleRenderer.addClass("ball");
     }
     start() {
@@ -97,16 +98,36 @@ class Ball extends Gameobject {
         let axis;
         this.main.gameobjects.forEach(other => {
             if (other instanceof Block) {
-                let currHit = other.intersectsBall(this);
-                if (currHit.hit) {
-                    hit = other;
-                    axis = currHit.axis;
+                if (this.ignore.indexOf(other) === -1) {
+                    let currHit = other.intersectsBall(this);
+                    if (currHit.hit) {
+                        hit = other;
+                        axis = currHit.axis;
+                    }
                 }
             }
         });
         if (hit) {
             this.speed.mirrorInPlace(axis);
-            hit.dispose();
+            if (hit.color === BlockColor.Green) {
+                hit.dispose();
+            }
+            else {
+                let newBlocks = hit.expand();
+                newBlocks.forEach(block => {
+                    this.ignore.push(block);
+                });
+            }
+        }
+        let n = 0;
+        while (n < this.ignore.length) {
+            let check = this.ignore[n];
+            if (check.intersectsBall(this, 5).hit) {
+                n++;
+            }
+            else {
+                this.ignore.splice(n, 1);
+            }
         }
     }
     stop() {
@@ -127,6 +148,7 @@ class Block extends Gameobject {
         this.color = color;
         this.pos.x = 25 + i * 50;
         this.pos.y = 50 + j * 100;
+        this.main.blocks[i][j] = this;
     }
     instantiate() {
         super.instantiate();
@@ -152,6 +174,10 @@ class Block extends Gameobject {
     stop() {
         super.stop();
     }
+    dispose() {
+        this.main.blocks[this.i][this.j] = undefined;
+        super.dispose();
+    }
     setColor(color) {
         this.color = color;
         if (this.color === BlockColor.Red) {
@@ -161,26 +187,27 @@ class Block extends Gameobject {
             this._renderer.addClass("green");
         }
     }
-    intersectsBall(ball) {
+    intersectsBall(ball, margin = 0) {
         let xMin = this.pos.x - 20;
         let xMax = this.pos.x + 20;
         let yMin = this.pos.y - 45;
         let yMax = this.pos.y + 45;
-        if (ball.pos.x - ball.radius > xMax) {
+        let r = ball.radius + margin;
+        if (ball.pos.x - r > xMax) {
             return { hit: false };
         }
-        if (ball.pos.y - ball.radius > yMax) {
+        if (ball.pos.y - r > yMax) {
             return { hit: false };
         }
-        if (ball.pos.x + ball.radius < xMin) {
+        if (ball.pos.x + r < xMin) {
             return { hit: false };
         }
-        if (ball.pos.y + ball.radius < yMin) {
+        if (ball.pos.y + r < yMin) {
             return { hit: false };
         }
         let axis = ball.pos.subtract(this.pos);
-        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - ball.radius - 20);
-        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - ball.radius - 45);
+        let xDepth = Math.abs(Math.abs(ball.pos.x - this.pos.x) - r - 20);
+        let yDepth = Math.abs(Math.abs(ball.pos.y - this.pos.y) - r - 45);
         if (xDepth < yDepth) {
             axis.y = 0;
             axis.normalizeInPlace();
@@ -190,6 +217,34 @@ class Block extends Gameobject {
             axis.normalizeInPlace();
         }
         return { hit: true, axis: axis };
+    }
+    expand() {
+        let newBlocks = [];
+        if (this.main.blocks[this.i + 1]) {
+            if (!this.main.blocks[this.i + 1][this.j]) {
+                let iNext = new Block(this.i + 1, this.j, this.main, this.color);
+                iNext.instantiate();
+                newBlocks.push(iNext);
+            }
+        }
+        if (this.main.blocks[this.i - 1]) {
+            if (!this.main.blocks[this.i - 1][this.j]) {
+                let iPrev = new Block(this.i - 1, this.j, this.main, this.color);
+                iPrev.instantiate();
+                newBlocks.push(iPrev);
+            }
+        }
+        if (!this.main.blocks[this.i][this.j + 1]) {
+            let jNext = new Block(this.i, this.j + 1, this.main, this.color);
+            jNext.instantiate();
+            newBlocks.push(jNext);
+        }
+        if (!this.main.blocks[this.i][this.j - 1]) {
+            let jPrev = new Block(this.i, this.j - 1, this.main, this.color);
+            jPrev.instantiate();
+            newBlocks.push(jPrev);
+        }
+        return newBlocks;
     }
 }
 /// <reference path="./engine/Gameobject.ts" />
