@@ -346,10 +346,10 @@ class Main {
             let screenHeight = document.body.clientHeight;
             let screenRatio = screenWidth / screenHeight;
             let w;
-            let marginLeft;
+            let left;
             let h;
-            let marginTop;
-            let r = 1.6;
+            let bottom;
+            let r = 1600 / (1000 + 100);
             if (screenRatio >= r) {
                 h = screenHeight * 0.9;
                 w = h * r;
@@ -358,12 +358,17 @@ class Main {
                 w = screenWidth * 0.9;
                 h = w / r;
             }
-            marginLeft = (screenWidth - w) / 2;
-            marginTop = (screenHeight - h) / 2;
+            left = (screenWidth - w) / 2;
+            bottom = (screenHeight - h) / 2;
             this.container.style.width = w + "px";
-            this.container.style.height = h + "px";
-            this.container.style.marginLeft = marginLeft + "px";
-            this.container.style.marginTop = marginTop + "px";
+            this.container.style.height = ((1000 / (1000 + 100)) * h) + "px";
+            this.container.style.left = left + "px";
+            this.container.style.bottom = bottom + "px";
+            let scoreDiv = document.getElementById("score");
+            scoreDiv.style.fontSize = ((90 / (1000 + 100)) * h) + "px";
+            scoreDiv.style.height = ((100 / (1000 + 100)) * h) + "px";
+            scoreDiv.style.right = left + "px";
+            scoreDiv.style.top = bottom + "px";
             this.containerRect = this.container.getBoundingClientRect();
         };
     }
