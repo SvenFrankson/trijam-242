@@ -27,6 +27,12 @@ class Ball extends Gameobject {
     public update(dt: number): void {
         super.update(dt);
 
+        let remainingBlocks = this.main.gameobjects.filter(g => { return g instanceof Block; });
+        if (remainingBlocks.length === 0) {
+            this.main.gameover(true);
+            return;
+        }
+
         this.pos.x += this.speed.x * dt;
         this.pos.y += this.speed.y * dt;
 
@@ -74,11 +80,6 @@ class Ball extends Gameobject {
                         extraBall.draw();
                     }
                     hit.dispose();
-                    let remainingBlocks = this.main.gameobjects.filter(g => { return g instanceof Block; });
-                    if (remainingBlocks.length === 0) {
-                        this.main.gameover(true);
-                        return;
-                    }
                 }
                 else {
                     hit.expand();
