@@ -29,8 +29,6 @@ class Main {
         window.addEventListener("resize", this._onResize);
         window.addEventListener("pointerenter", this._onPointerMove);
         window.addEventListener("pointermove", this._onPointerMove);
-        
-        this.makeLevel1();
 
         this._onResize();
         this._mainLoop();
@@ -93,6 +91,8 @@ class Main {
     }
 
     public start(): void {
+        
+        this.makeLevel1();
         
         document.getElementById("play").style.display = "none";
         document.getElementById("game-over").style.display = "none";

@@ -142,7 +142,7 @@ class Block extends Gameobject {
                 newBlocks.push(iPrev);
             }
         }
-        if (!this.main.blocks[this.i][this.j + 1]) {
+        if (this.j + 1 < 10 && !this.main.blocks[this.i][this.j + 1]) {
             let jNext = new Block(this.i, this.j + 1, this.main, this.color);
             jNext.instantiate();
             jNext.scale.x = 0.01;
@@ -150,7 +150,7 @@ class Block extends Gameobject {
             jNext.animateSize(new Vec2(1, 1), 3);
             newBlocks.push(jNext);
         }
-        if (!this.main.blocks[this.i][this.j - 1]) {
+        if (this.j - 1 > 0 && !this.main.blocks[this.i][this.j - 1]) {
             let jPrev = new Block(this.i, this.j - 1, this.main, this.color);
             jPrev.instantiate();
             jPrev.scale.x = 0.01;
